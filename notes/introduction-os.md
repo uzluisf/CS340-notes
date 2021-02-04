@@ -351,8 +351,10 @@ determine whether or not to disable (i.e., mask) the interrupt. Maskable
 interrupts are non-critical. 
 
 * A **non-maskable interrupt** is one that cannot be disabled. It must be
-  serviced. It is not affected by the interrupt mask register. Examples are
-  errors from memory and timer interrupts. 
+  serviced immediately by the computer. It is not affected by the interrupt mask
+  register. Examples are errors from memory and timer interrupts should be
+  serviced immediately and thus shouldn't be disabled (i.e., ignored for later
+  servicing).
 
 In some systems, disabling an interrupt means ignoring it completely. In others,
 it is possible to defer processing the interrupt if it is disabled. **Deferred
@@ -421,5 +423,265 @@ To illustrate this, in the figure below, we have augmented the sequence of steps
 described in the slide, *Typical Read Operation* to show how interrupts are used
 in the read operation.
 
-![interrupt-driven-io-read-operation-steps](../notes/interrupt-driven-io-read-operation-steps.png)
+![interrupt-driven-io-read-operation-steps](../images/interrupt-driven-io-read-operation-steps.png)
+
+## Storage
+
+### Storage Concepts
+
+Storage media and devices can be characterized in many ways, such as by their
+cost, reliability, capacity, and so on. We define the key properties of
+interest: 
+
+* **Capacity **is total amount of stored information that a storage medium or
+  device can hold. It is measured in either bits or bytes.
+* **Volatility** refers to whether or not the information stored on a storage
+  medium is retained when power is not continuously supplied to that medium. A
+  **non-volatile** storage medium retains the information whereas a **volatile**
+  one does not.
+* **Access time** is the amount of time that it takes the medium or device to
+  access the information at a given location. This time may vary depending on
+  whether the access is to read information or to store it.
+* **Accessibility** refers to two different types of access to the locations on
+  a storage medium. 
+    * **Random access** media are those such that all locations can be accessed
+      in constant time (i.e., 0(1). 
+    * **Sequential access** media are those such that the information must be
+      accessed in sequential order. This implies that the time to access a
+      particular piece of information depends upon where that information is
+      stored on the medium. Magnetic tape is an example of a sequential access
+      medium.
+
+### Measuring Storage: Bits, Bytes, and Words 
+
+* A **bit** is the smallest unit of information. A bit has two possible values,
+  which we represent as the numbers 0 and 1. The unit symbol for a bit is
+  lowercase `b` (e.g., 128b means 128 bits). 
+* A **byte** is the smallest addressable unit of storage in a computer and consists
+  of eight bits. There have been many different definitions of a byte, but over
+  time, the eight-bit byte became the de facto standard. The unit symbol for a
+  byte is uppercase 'B', e.g., 4096B means 4096 bytes. 
+* A **word** is the size of a given computer’s native unit of data.
+    * Typically, it is the size of a general-purpose register, the size of a
+      machine instruction, and the size of the data chunk that is transferred to
+      and from memory. 
+    * A word consists of one or more bytes. The **word length** or word size is the
+      number of bits in a word. 
+    * A "64-bit" architecture has a word length of 64 bits or 8 bytes. It
+      has 64-bit registers and 64-bit memory addresses.
+
+### Measuring Storage: Larger Amounts 
+
+In practice, we often describe amounts of data and storage sizes that are orders
+of magnitude larger than bytes and words. We need to talk about thousands,
+millions, billions, trillions or more bytes, and so we use units whose sizes are
+commensurate with these magnitudes. 
+
+Below are commonly used units and their meanings.
+
+|Unit|Actual Number of Bytes|As Power of 2|Abbreviation|
+|:---|:---------------------|:------------|:-----------|
+|kylobyte|1024|2^10 bytes|1KB|
+|megabyte|1048576|2^20 bytes|1MB|
+|gigabyte|1073741824|2^30 bytes|1GB|
+|terabyte|1099511627776|2^40 bytes|1TB|
+|gigabyte|1125899906842624|2^50 bytes|1PB|
+
+Some computer manufacturers misuse these terms. For example, a hard disk vendor
+might say a disk has 500 gigabytes when it has 500 billion bytes.
+
+Storage is measured in these binary-based units, but transmission rates,
+bandwidths, and other rates expressed as a function of bytes per unit time
+generally use the decimal approximations or express in bits per time. Thus, a
+bandwidth of 50MB/second means 50,000,000 bytes per second.
+
+### The Different Types of Storage
+
+Modern computers have many different types of storage:
+* **Primary storage** refers to storage that is directly accessible to the
+  processor.
+* **Secondary storage** refers to storage that is not directly accessible to the
+  processor, but can be accessed through the I/O channels, and so is still
+  considered to be on-line.
+* **Tertiary storage** refers to storage that is not directly accessible to the
+  processor, and cannot be accessed through the I/O channels without some
+  intervention by a human or a mechanical system. Tertiary storage is therefore
+  off-line1. 
+
+The different storage components of a general purpose computer system are as
+follows, listed in order of increasing access time:
+
+|Component|Type of Storage|Range of Access Times|
+|:--------|:--------------|:--------------------|
+|CPU registers|primary|0.2-1.0 ns|
+|CPU cache (levels 1, 2, and 3)|primary|0.5-2.5 ns|
+|Random access memory|primary|50-70 ns|
+|Solid-state drives (SSDs)|secondary|5000-50000 ns|
+|Magnetic disks|secondary|5-20 million ns|
+|Optical disks|tertiary||
+|Magnetic tape|tertiary||
+
+### The Memory Hierarchy 
+
+The preceding list of components forms a hierarchy in which components nearer
+the top are faster and have smaller capacity than those that are further away.
+For example, registers are above CPU caches, which are above random access
+memory, and these are all above magnetic disks. Tertiary storage is orders of
+magnitude slower than all of these.
+
+![memory-hierarchy-diagram](memory-hierarchy-diagram.png)
+
+### Storage in the CPU 
+
+The CPU registers have the fastest access time of all storage in the computer
+system. However, their total capacity is small; a program cannot be stored in
+registers! In 2020, there are sixteen 64-bit general purpose registers in a
+typical desktop computer. Programs are stored in main memory and data and
+instructions are brought into the CPU as needed.
+
+### Random Access Memory 
+
+**Random Access Memory (RAM)** is the memory in which the operating system,
+programs, and data reside when the computer is turned on. When a program is
+running, its executable image is stored in RAM. RAM is also called primary
+memory. RAM is volatile, i.e., it loses all data and programs when the machine
+loses power.
+
+* There are many different technologies for implementing RAM, but the most
+  common is **Dynamic Random Access Memory (DRAM)**. The alternative is **Static
+  Random Access Memory (SRAM)**.
+* DRAM is dynamic because the information is stored in **capacitors**, which
+  cannot retain a charge without being periodically refreshed with energy.
+  DRAM's refresh cycles and the fact that reading the data destroys the
+  capacitor contents make DRAM slower than SRAM. DRAM access times are
+  roughly from 50 to 70ns.
+* SRAM is very expensive and its capacity is orders of magnitude smaller
+  than DRAM. Therefore it is not used for primary memory and instead is used
+  for the various types of processor cache. SRAM access times are roughly
+  from 0.5 to 2.5ns.
+
+### Magnetic Disk Drives and Solid-State Drives 
+
+Magnetic disks, commonly called **hard disks**, are the most common medium of
+secondary storage. Their capacities vary greatly, but they range from one to
+sixteen terabytes. Hard disk access times range from 5ms to 20ms. Expressed in
+ns, this is 5,000,000ns to 20,000,000ns, significantly slower than RAM of any
+kind.
+
+Magnetic disks are non-volatile, i.e., they retain all information when the power is
+removed. They are where the file system resides, and they also provide a type of
+storage known as **swap** space, which is used in virtual memory systems to extend
+the capacity of primary memory. All operating system components are stored on
+the secondary storage medium, and all user programs and data.
+
+Less common are solid-state drives, which are not mechanical and therefore last
+longer. They have smaller capacity and are more expensive per bit than magnetic
+disks. Because there are a limited number of possible writes and rewrites, they
+are more suited for storing mostly read-only files and data, such as the
+operating system software.
+
+### Tertiary Storage Media 
+
+Tertiary storage is used for backing up systems or archiving data. Sometimes
+optical disks are used, but their capacity is small and the ability to write and
+rewrite them is limited. Ordinary DVD disks can store no more than a few
+gigabytes and Blu Ray disks a few hundred gigabytes.
+
+In contrast a magnetic tape can store 800GB and many systems use robotic
+libraries to perform backups to tape and restores from tape.
+
+One can also purchase hard disks that are removable and external. These can be
+used for backing up a system. These external disks have the same range of
+capacities as internal disks and are just slightly slower because they are
+accessed through a slower bus than the internal disks.
+
+### Caches and Caching 
+
+What is **cache** (|ˈkash|)? In ordinary usage, a **cache** is a safe place to
+hide things. As a verb, **to cache something** is to hide it in a secure place. 
+
+In computer terminology, the noun "cache" generally means a fast but small
+storage component that is used by a device as a temporary holding area for data
+in order to improve performance. To cache something is to copy it into the
+cache. 
+
+Examples: 
+* A cache is used by the processor to hold frequently used data as well as
+  instructions.
+* A cache is used by hard disk drives and other secondary storage
+  devices as a place to hold data being written to or read from the device.
+* A cache is used by a web browser to store web pages downloaded from the web.
+
+### Processor Cache 
+
+Registers in the CPU are fast but there are not many of them. They cannot store
+frequently used data. 
+
+DRAM is vast in comparison, but it is slow to access. The processor only
+accesses its data by putting requests on the system bus and waiting. This slows
+down computations, as the processor must **stall**, waiting for data to be
+available. 
+
+SRAM is a much faster type of memory than DRAM, but because it is expensive and
+because it takes up more "real estate" on a chip, it cannot have the same large
+capacity as DRAM. However, smaller capacity SRAM can be placed on the processor
+chip as a compromise - it can store much more data than registers, and it is
+much faster than DRAM. It is used to create processor cache. 
+
+The **processor cache** is a level of the memory hierarchy between the CPU and
+main memory. It is is built using SRAM technology and is integrated into the
+CPU. It stores data and instructions that are frequently accessed, reducing
+accesses to the slower DRAM. When data is missing in the cache, it is copied
+into it from main memory. 
+
+Questions such as how big the cache is, what size chunks are stored in it, how
+data is located in it, which data is replaced if it is full, what happens when
+data in the cache is changed, and so on, are the subject of a computer
+architecture course and are not answered here.
+
+### I/O and Direct Memory Access
+
+
+Many devices are slow devices that handle small chunks of data. For example,
+keyboards and pointing devices deliver a byte at a time. Other devices may be
+required to deliver thousands of bytes in a single I/O operation.
+
+File operations typically cause the transfer of entire disk blocks, which can be
+anywhere from 1KB to 4KB or more. To transfer this much data using the interrupt
+mechanism for each byte or word of data would require a lot of CPU time and a
+lot of interrupts, slowing down the computer.
+
+**Direct Memory Access (DMA)** is a method of I/O that transfers data at a very high
+bandwidth with low overhead. It removes the processor from the operation of
+transferring large amounts of data to or from a device. The processor can
+continue to execute other instructions while the transfer takes place.
+
+In DMA, the processor, under program control authorizes a device to take charge
+of the I/O transfers to memory, allowing it to be the **bus master** until the I/O
+is completed. A device with this capability is called a **DMA controller**.
+
+Many devices use DMA, including disk drive controllers, graphics cards, network
+cards and sound cards. In some systems, such as those with a PCI bus, each
+device has its own internal DMA controller. In others, such as ISA, there is a
+central DMA controller.
+
+# DMA Operation 
+
+1. A program running on the CPU gives the DMA controller 
+    * a memory address,
+    * the number of bytes to transfer,
+    * a flag indicating whether it is a read or a write, and 
+    * the address of the I/O device and data involved in the I/O.
+2. The DMA controller becomes the **bus master** on the memory bus.
+3. If it is an input operation, the device will then start sending data to the
+   DMA controller, which will buffer the data, and store it in successive memory
+   locations as it becomes available.
+4. If it is an output operation, it buffers the data from memory and sends it to
+   the I/O device as it becomes ready to receive it.
+5. When the transfer is complete, the DMA controller relinquishes the bus and
+   sends an interrupt to the processor.
+
+Because the DMA controller **owns the bus** during a transfer, the CPU will not be
+able to access memory. If the CPU or the cache controller needs to access
+memory, it will be delayed. There are methods of avoiding this.
 
